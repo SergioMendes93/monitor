@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<history>
+   <processor signature="gcc 5.4.0 x86_64-linux-gnu -O2 -Wall -m64 -c -fPIC -DSIGAR_LINUX -D_REENTRANT -I../../include -I../../src/os/linux -Ibuild/src -Isrc/jni">
+      <target file="linux_sigar.o" lastModified="15b05c321f0">
+         <source file="../../../../../src/os/linux/linux_sigar.c" lastModified="12845256c00"/>
+      </target>
+      <target file="vmcontrol_wrapper.o" lastModified="15b05c31638">
+         <source file="../../../src/jni/vmware/vmcontrol_wrapper.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar_ptql.o" lastModified="15b05c321f0">
+         <source file="../../../../../src/sigar_ptql.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar.o" lastModified="15b05c31e08">
+         <source file="../../../../../src/sigar.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar_getline.o" lastModified="15b05c321f0">
+         <source file="../../../../../src/sigar_getline.c" lastModified="12845256c00"/>
+      </target>
+      <target file="javavmware.o" lastModified="15b05c321f0">
+         <source file="../../../src/jni/vmware/javavmware.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar_version.o" lastModified="15b05c31a20">
+         <source file="../../src/sigar_version.c" lastModified="15b05c31250"/>
+      </target>
+      <target file="sigar_format.o" lastModified="15b05c31e08">
+         <source file="../../../../../src/sigar_format.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar_fileinfo.o" lastModified="15b05c321f0">
+         <source file="../../../../../src/sigar_fileinfo.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar_cache.o" lastModified="15b05c321f0">
+         <source file="../../../../../src/sigar_cache.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar_util.o" lastModified="15b05c31a20">
+         <source file="../../../../../src/sigar_util.c" lastModified="12845256c00"/>
+      </target>
+      <target file="sigar_signal.o" lastModified="15b05c31a20">
+         <source file="../../../../../src/sigar_signal.c" lastModified="12845256c00"/>
+      </target>
+      <target file="javasigar.o" lastModified="15b05c31a20">
+         <source file="../../../src/jni/javasigar.c" lastModified="12845256c00"/>
+      </target>
+   </processor>
+</history>
