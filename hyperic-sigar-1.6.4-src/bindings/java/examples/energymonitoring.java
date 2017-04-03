@@ -10,26 +10,26 @@ public class energymonitoring {
 
 	static double  lastCPUMeasureSent = 0.0;
 	static double  lastMemoryMeasureSent = 0.0;
-	static double  threshold = 3.0;
-	static String ip = "192.168.1.154";
+	static double  threshold = 0.1;
+	static String ip = "192.168.1.170";
 
     public static void main(String[] args) throws Exception {
 //		getIP();
 		while(true) {
 			double firstCPUMeasure = getCPU();	
-			System.out.println("First CPU " + firstCPUMeasure);
 			double firstMemoryMeasure = getMemory();
 			
 			Thread.sleep(1000); //we wait and make a second measure then average them to avoid 100,0,100,0 peaks. In this case the average should give 50 idealy
 
 			double finalCPUMeasure = (firstCPUMeasure + getCPU()) / 2;
 			double finalMemoryMeasure = (firstMemoryMeasure + getMemory()) / 2;
-			System.out.println("Average CPU " + finalCPUMeasure);
 
-			double CPUResult = Math.abs(lastCPUMeasureSent - finalCPUMeasure);
+			//divide by 100 to get values from 0-1
+			double CPUResult = Math.abs(lastCPUMeasureSent - finalCPUMeasure); 
 			double MemoryResult = Math.abs(lastMemoryMeasureSent - finalMemoryMeasure);
 
 			System.out.println("CPURESULT = " + CPUResult);
+			System.out.println("MEmoryResult = " + MemoryResult);
 			//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
 			if((CPUResult > threshold) && (MemoryResult > threshold)) {
 				sendUpdate(finalCPUMeasure, finalMemoryMeasure, 1);
@@ -49,11 +49,11 @@ public class energymonitoring {
 	public static void sendUpdate(double cpu, double memory, int messageType) {
 		String url = "";
 		if(messageType == 1){
-			url = "http://192.168.1.154:12345/host/updateboth/"+ip+"&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
+			url = "http://"+ip+":12345/host/updateboth/"+ip+"&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
 		} else if(messageType == 2) {
-			url = "http://192.168.1.154:12345/host/updatecpu/"+ip+"&"+String.valueOf(cpu);
+			url = "http://"+ip+":12345/host/updatecpu/"+ip+"&"+String.valueOf(cpu);
 		} else {
-			url = "http://192.168.1.154:12345/host/updatememory/"+ip+"&"+String.valueOf(memory);
+			url = "http://"+ip+":12345/host/updatememory/"+ip+"&"+String.valueOf(memory);
 		}
 		try {
 			URL obj = new URL(url);
@@ -73,12 +73,12 @@ public class energymonitoring {
 		Cpu cpu = sigar.getCpu();
 		CpuPerc perc = sigar.getCpuPerc();
 		
-		return perc.getCombined()*100;	
+		return perc.getCombined();	
 	}
 	public static double getMemory() throws Exception {
 		Sigar sigar = new Sigar();
 		Mem mem = sigar.getMem();
-		return mem.getUsedPercent();
+		return mem.getUsedPercent()/100;
 	}
 	
 	public static void getIP() {

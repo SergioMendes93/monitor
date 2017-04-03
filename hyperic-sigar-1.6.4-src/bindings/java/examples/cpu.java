@@ -9,7 +9,7 @@ import org.hyperic.sigar.*;
 public class cpu {
 
     public static void main(String[] args) throws Exception{
-
+/*
 	Sigar sigar = new Sigar();
 
 	Cpu cpu = sigar.getCpu();
@@ -35,7 +35,16 @@ public class cpu {
 	for (CpuPerc cpuPerc : cpuPercs) {
 		System.out.println("system idle: " + cpuPerc.getIdle());//get current CPU idle rate
 		System.out.println("conbined: "+ cpuPerc.getCombined());//get current usage
-		System.out.println();
-} 
+		System.out.println();*/
+   try {
+        final Sigar sigar = new Sigar();
+        while (true) {
+            ProcCpu cpu = sigar.getProcCpu(4977);
+            System.out.println(cpu.getPercent());
+	    Thread.sleep(2000); //we wait before trying to send another message 
+        }
+    } catch (SigarException ex) {
+        ex.printStackTrace();
+    }
 }
 }
