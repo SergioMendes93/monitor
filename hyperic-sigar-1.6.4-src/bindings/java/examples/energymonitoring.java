@@ -4,6 +4,7 @@ import java.text.*;
 import java.lang.*;
 import java.net.*;
 
+import org.json.simple.JSONObject;
 import org.hyperic.sigar.*;
 
 public class energymonitoring {
@@ -11,10 +12,36 @@ public class energymonitoring {
 	static double  lastCPUMeasureSent = 0.0;
 	static double  lastMemoryMeasureSent = 0.0;
 	static double  threshold = 0.1;
-	static String ip = "192.168.1.170";
+	static String ip = "192.168.1.172";
 
     public static void main(String[] args) throws Exception {
 //		getIP();
+		SendInfoHostRegistry();
+//		MonitorResourceUsage();
+
+	}
+
+	//this method is responsible for sending information of this host to the host registry such as total cpus, total memory
+	public static void SendInfoHostRegistry() throws Exception{
+		String numCPUs = String.valueOf(Runtime.getRuntime().availableProcessors());		
+		Sigar sigar = new Sigar();
+        Mem mem = sigar.getMem();
+		String totalMemory = String.valueOf(mem.getTotal());
+		
+        String url = "http://"+ip+":12345/host/createhost/10&"+totalMemory+"&"+numCPUs;
+		try {
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+            int responseCode = con.getResponseCode();
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));       
+        }catch(Exception e) {
+            System.out.println("Exception " + e);
+        }
+	}
+	public static void MonitorResourceUsage() throws Exception{
 		while(true) {
 			double firstCPUMeasure = getCPU();	
 			double firstMemoryMeasure = getMemory();
