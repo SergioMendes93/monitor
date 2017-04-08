@@ -24,9 +24,10 @@ public class energymonitoring {
     public static void main(String[] args) throws Exception {
 //		getIP();
 //		SendInfoHostRegistry();
-		Thread t1 = new ThreadMonitorHost();
+//		Thread t1 = new ThreadMonitorHost();
 		//t1.start();
 		receiveRequests();
+                
 	}
 
 	//function used to deal with incoming GET or POST requests from other modules
@@ -58,6 +59,8 @@ public class energymonitoring {
 			query = t.getRequestURI().getQuery();
 			String[] parts = query.split("=");
 			taskID = parts[1];
+			System.out.println("Task ID received " + taskID);
+
 		}		
 
 		@Override
@@ -73,13 +76,15 @@ public class energymonitoring {
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
 					}catch(Exception e) {System.out.println(e);}
 				}
-				System.out.println("got all samples v2");
 				double avgCPU = sumCPU / BUFFER_POSITIONS;
 				double avgMemory = sumMemory / BUFFER_POSITIONS;
 
+				System.out.println("got all samples : " + avgCPU + " " + avgMemory);
+				
 				//we compare the last sent value with the new one to see if it is worth sending it
 				double CPUResult = Math.abs(lastCPU - avgCPU); 
 				double MemoryResult = Math.abs(lastMemory - avgMemory);
+				
 
 				//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
                 try {
@@ -143,10 +148,18 @@ public class energymonitoring {
 	}
 
 	public static double getTaskCPU(String taskID) throws Exception{
-		Runtime rt = Runtime.getRuntime();
-        Process pr = rt.exec("docker stats "+taskID+" --format \"{{.CPUPerc}}\" --no-stream ");
-		BufferedReader stdInput = new BufferedReader(new 
-     	InputStreamReader(pr.getInputStream()));
+		ProcessBuilder pb = new ProcessBuilder("docker", "stats",taskID, "--format", "{{.CPUPerc}}", "--no-stream");
+        Map<String, String> env = pb.environment();
+        // set environment variable u
+        env.put("DOCKER_TLS_VERIFY", "1");
+        env.put("DOCKER_HOST", "tcp://192.168.99.100:2376");
+		//TODO: ESTES DOIS ABAIXO TEM QUE SER DINAMICOS, OU SEJA O WORKER VEM COMO ARGUMENTO
+        env.put("DOCKER_CERT_PATH", "/home/sergiosmendes/.docker/machine/machines/manager");
+        env.put("DOCKER_MACHINE_NAME", "manager");
+
+        Process pr = pb.start();
+        BufferedReader stdInput = new BufferedReader(new 
+        InputStreamReader(pr.getInputStream()));
 
 		double cpuValue = 0.0;
 		String s = null;
@@ -161,11 +174,19 @@ public class energymonitoring {
 	}
 
 	public static double getTaskMemory(String taskID) throws Exception{
-		Runtime rt = Runtime.getRuntime();
-        Process pr = rt.exec("docker stats "+taskID+" --format \"{{.MemPerc}}\" --no-stream ");
-		BufferedReader stdInput = new BufferedReader(new 
-     	InputStreamReader(pr.getInputStream()));
+		ProcessBuilder pb = new ProcessBuilder("docker", "stats",taskID, "--format", "{{.MemPerc}}", "--no-stream");
+        Map<String, String> env = pb.environment();
+        // set environment variable u
+        env.put("DOCKER_TLS_VERIFY", "1");
+        env.put("DOCKER_HOST", "tcp://192.168.99.100:2376");
+        //TODO: ESTES DOIS ABAIXO TEM QUE SER DINAMICOS, OU SEJA O WORKER VEM COMO ARGUMENTO
+        env.put("DOCKER_CERT_PATH", "/home/sergiosmendes/.docker/machine/machines/manager");
+        env.put("DOCKER_MACHINE_NAME", "manager");
 
+        Process pr = pb.start();
+        BufferedReader stdInput = new BufferedReader(new 
+        InputStreamReader(pr.getInputStream()));
+		
 		double memoryValue = 0.0;
 		String s = null;
 		int i = 0;
@@ -173,10 +194,9 @@ public class energymonitoring {
 			String[] parts = s.split("%");
 			String[] parts1 = parts[0].split("\"");
 			memoryValue = Double.parseDouble(parts1[1]);
+			System.out.println("Reading");
 			return memoryValue;
 		}
-		System.out.println("AQUI");
-
 		return 0.0;
 	}
 
