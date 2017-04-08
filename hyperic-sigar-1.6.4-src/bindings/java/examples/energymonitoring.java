@@ -12,13 +12,76 @@ public class energymonitoring {
 	static double  lastCPUMeasureSent = 0.0;
 	static double  lastMemoryMeasureSent = 0.0;
 	static double  threshold = 0.1;
-	static String ip = "192.168.1.172";
+	static String ip = "192.168.1.4";
+
+	static int BUFFER_POSITIONS = 20;
+	static int TIME_BETWEEN_SAMPLES = 3*1000; //3 seconds
+	static int TIME_BETWEEM_SENDING_SAMPLES = (BUFFER_POSITIONS * TIME_BETWEEN_SAMPLES) / 2;
 
     public static void main(String[] args) throws Exception {
 //		getIP();
 		SendInfoHostRegistry();
-//		MonitorResourceUsage();
+		Thread t1 = new ThreadMonitorHost();
+		Thread t2 = new ThreadMonitorTask();
+		t1.start();
+		t2.start();
+	}
 
+	//thread responsible for monitoring task resource usage
+	static class ThreadMonitorTask extends Thread {
+		@Override
+		public void run() {
+
+		}
+	}
+	
+	//thread responsible for monitoring host resource usage
+	static class ThreadMonitorHost extends Thread {
+		@Override
+		public void run(){
+			while(true) {
+				double sumMemory = 0.0;
+				double sumCPU = 0.0;										
+
+				for(int i = 0; i < BUFFER_POSITIONS; i++) {
+					try{
+						sumCPU += getCPU();
+						sumMemory += getMemory();
+
+						Thread.sleep(TIME_BETWEEN_SAMPLES);
+					}catch(Exception e) {System.out.println(e);}
+				}
+				System.out.println("got all samples");
+				double avgCPU = sumCPU / BUFFER_POSITIONS;
+				double avgMemory = sumMemory / BUFFER_POSITIONS;
+
+				//we compare the last sent value with the new one to see if it is worth sending it
+				double CPUResult = Math.abs(lastCPUMeasureSent - avgCPU); 
+				double MemoryResult = Math.abs(lastMemoryMeasureSent - avgMemory);
+
+				//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
+				if((CPUResult > threshold) && (MemoryResult > threshold)) {
+					try {
+						sendUpdate(avgCPU, avgMemory, 1);
+					}catch(Exception e) {
+						System.out.println(e);
+					}
+					lastCPUMeasureSent = avgCPU;
+					lastMemoryMeasureSent = avgMemory;				
+				} else if(CPUResult > threshold) {
+					try {
+						sendUpdate(avgCPU, avgMemory, 2);				
+					} catch(Exception e) {System.out.println(e);}
+					lastCPUMeasureSent = avgCPU;
+				} else if(MemoryResult > threshold) {
+					try {
+						sendUpdate(avgCPU, avgMemory, 3);				
+					} catch(Exception e) {System.out.println(e);}
+					lastMemoryMeasureSent = avgMemory;				
+				}
+			} 
+
+		}
 	}
 
 	//this method is responsible for sending information of this host to the host registry such as total cpus, total memory
@@ -40,37 +103,6 @@ public class energymonitoring {
         }catch(Exception e) {
             System.out.println("Exception " + e);
         }
-	}
-	public static void MonitorResourceUsage() throws Exception{
-		while(true) {
-			double firstCPUMeasure = getCPU();	
-			double firstMemoryMeasure = getMemory();
-			
-			Thread.sleep(1000); //we wait and make a second measure then average them to avoid 100,0,100,0 peaks. In this case the average should give 50 idealy
-
-			double finalCPUMeasure = (firstCPUMeasure + getCPU()) / 2;
-			double finalMemoryMeasure = (firstMemoryMeasure + getMemory()) / 2;
-
-			//divide by 100 to get values from 0-1
-			double CPUResult = Math.abs(lastCPUMeasureSent - finalCPUMeasure); 
-			double MemoryResult = Math.abs(lastMemoryMeasureSent - finalMemoryMeasure);
-
-			System.out.println("CPURESULT = " + CPUResult);
-			System.out.println("MEmoryResult = " + MemoryResult);
-			//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
-			if((CPUResult > threshold) && (MemoryResult > threshold)) {
-				sendUpdate(finalCPUMeasure, finalMemoryMeasure, 1);
-				lastCPUMeasureSent = finalCPUMeasure;
-				lastMemoryMeasureSent = finalMemoryMeasure;				
-			} else if(CPUResult > threshold) {
-				sendUpdate(finalCPUMeasure, finalMemoryMeasure, 2);				
-				lastCPUMeasureSent = finalCPUMeasure;
-			} else if(MemoryResult > threshold) {
-				sendUpdate(finalCPUMeasure, finalMemoryMeasure, 3);				
-				lastMemoryMeasureSent = finalMemoryMeasure;				
-			}
-			Thread.sleep(1000); //we wait before trying to send another message 
-		} 
 	}
 
 	public static void sendUpdate(double cpu, double memory, int messageType) {
