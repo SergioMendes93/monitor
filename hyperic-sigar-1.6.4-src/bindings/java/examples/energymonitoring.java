@@ -20,10 +20,10 @@ public class energymonitoring {
 
     public static void main(String[] args) throws Exception {
 //		getIP();
-		SendInfoHostRegistry();
+//		SendInfoHostRegistry();
 		Thread t1 = new ThreadMonitorHost();
 		Thread t2 = new ThreadMonitorTask();
-		t1.start();
+		//t1.start();
 		t2.start();
 	}
 
@@ -31,7 +31,13 @@ public class energymonitoring {
 	static class ThreadMonitorTask extends Thread {
 		@Override
 		public void run() {
-
+			try {
+				double cpu = getTaskCPU();
+				double memory = getTaskMemory();
+				System.out.println(cpu);
+				System.out.println(memory);
+				sendUpdateTask(cpu,memory,1);
+			}catch(Exception e) {System.out.println(e);}
 		}
 	}
 	
@@ -84,6 +90,44 @@ public class energymonitoring {
 		}
 	}
 
+	public static double getTaskCPU() throws Exception{
+		Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("docker stats ad9f54d3deb7 --format \"{{.CPUPerc}}\" --no-stream ");
+		BufferedReader stdInput = new BufferedReader(new 
+     	InputStreamReader(pr.getInputStream()));
+
+		double cpuValue = 0.0;
+		String s = null;
+		int i = 0;
+		while ((s = stdInput.readLine()) != null) {
+			String[] parts = s.split("%");
+			String[] parts1 = parts[0].split("\"");
+			cpuValue = Double.parseDouble(parts1[1]);
+			return cpuValue;
+		}
+		return 0.0;
+	}
+
+	public static double getTaskMemory() throws Exception{
+		Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("docker stats ad9f54d3deb7 --format \"{{.MemPerc}}\" --no-stream ");
+		BufferedReader stdInput = new BufferedReader(new 
+     	InputStreamReader(pr.getInputStream()));
+
+		double memoryValue = 0.0;
+		String s = null;
+		int i = 0;
+		while ((s = stdInput.readLine()) != null) {
+			String[] parts = s.split("%");
+			String[] parts1 = parts[0].split("\"");
+			memoryValue = Double.parseDouble(parts1[1]);
+			return memoryValue;
+		}
+		System.out.println("AQUI");
+
+		return 0.0;
+	}
+
 	//this method is responsible for sending information of this host to the host registry such as total cpus, total memory
 	public static void SendInfoHostRegistry() throws Exception{
 		String numCPUs = String.valueOf(Runtime.getRuntime().availableProcessors());		
@@ -104,6 +148,28 @@ public class energymonitoring {
             System.out.println("Exception " + e);
         }
 	}
+	public static void sendUpdateTask(double cpu, double memory, int messageType) throws Exception{
+        String url = "";
+        if(messageType == 1){
+            url = "http://"+ip+":1234/task/updateboth/1&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
+        } else if(messageType == 2) {
+            url = "http://"+ip+":1234/task/updatecpu/1&"+String.valueOf(cpu);
+        } else {
+            url = "http://"+ip+":1234/task/updatememory/1&"+String.valueOf(memory);
+        }
+        try {
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+            int responseCode = con.getResponseCode();
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));       
+        }catch(Exception e) {
+            System.out.println("Exception " + e);
+        }
+    }
+
 
 	public static void sendUpdate(double cpu, double memory, int messageType) {
 		String url = "";
