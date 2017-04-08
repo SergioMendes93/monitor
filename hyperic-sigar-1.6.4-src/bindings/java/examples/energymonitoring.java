@@ -3,6 +3,9 @@ import java.util.*;
 import java.text.*;
 import java.lang.*;
 import java.net.*;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
 import org.json.simple.JSONObject;
 import org.hyperic.sigar.*;
@@ -22,22 +25,77 @@ public class energymonitoring {
 //		getIP();
 //		SendInfoHostRegistry();
 		Thread t1 = new ThreadMonitorHost();
-		Thread t2 = new ThreadMonitorTask();
 		//t1.start();
-		t2.start();
+		receiveRequests();
+	}
+
+	//function used to deal with incoming GET or POST requests from other modules
+	public static void receiveRequests() throws Exception{
+		HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+    	server.createContext("/newtask", new MyHandler());
+    	server.setExecutor(null); // creates a default executor
+    	server.start();
+	}
+
+	static class MyHandler implements HttpHandler {
+		@Override
+    	public void handle(HttpExchange t) throws IOException {
+			Thread thread = new ThreadMonitorTask(t);
+			thread.start();
+    	}
 	}
 
 	//thread responsible for monitoring task resource usage
 	static class ThreadMonitorTask extends Thread {
+		private String taskID;
+		HttpExchange t;
+		String query;
+		double lastCPU = 0.0;
+		double lastMemory = 0.0;
+
+		public ThreadMonitorTask(HttpExchange t) {
+			this.t = t;
+			query = t.getRequestURI().getQuery();
+			String[] parts = query.split("=");
+			taskID = parts[1];
+		}		
+
 		@Override
 		public void run() {
-			try {
-				double cpu = getTaskCPU();
-				double memory = getTaskMemory();
-				System.out.println(cpu);
-				System.out.println(memory);
-				sendUpdateTask(cpu,memory,1);
-			}catch(Exception e) {System.out.println(e);}
+			while(true) {
+				double sumMemory = 0.0;
+				double sumCPU = 0.0;
+
+				for(int i = 0; i < BUFFER_POSITIONS; i++) {
+					try {
+						sumCPU += getTaskCPU(taskID);
+						sumMemory += getTaskMemory(taskID);
+						Thread.sleep(TIME_BETWEEN_SAMPLES);
+					}catch(Exception e) {System.out.println(e);}
+				}
+				System.out.println("got all samples v2");
+				double avgCPU = sumCPU / BUFFER_POSITIONS;
+				double avgMemory = sumMemory / BUFFER_POSITIONS;
+
+				//we compare the last sent value with the new one to see if it is worth sending it
+				double CPUResult = Math.abs(lastCPU - avgCPU); 
+				double MemoryResult = Math.abs(lastMemory - avgMemory);
+
+				//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
+                try {
+					if((CPUResult > threshold) && (MemoryResult > threshold)) {
+                        sendUpdateTask(avgCPU, avgMemory, 1);
+	                    lastCPU = avgCPU;
+    	                lastMemory = avgMemory;
+        	        } else if(CPUResult > threshold) {
+                        sendUpdateTask(avgCPU, avgMemory, 2);
+	                    lastCPU = avgCPU;
+                	} else if(MemoryResult > threshold) {
+                        sendUpdateTask(avgCPU, avgMemory, 3);
+	                    lastMemory = avgMemory;
+					}
+                }catch(Exception e) {System.out.println(e);}
+			}
 		}
 	}
 	
@@ -66,33 +124,27 @@ public class energymonitoring {
 				double MemoryResult = Math.abs(lastMemoryMeasureSent - avgMemory);
 
 				//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
-				if((CPUResult > threshold) && (MemoryResult > threshold)) {
-					try {
+				try {
+					if((CPUResult > threshold) && (MemoryResult > threshold)) {
 						sendUpdate(avgCPU, avgMemory, 1);
-					}catch(Exception e) {
-						System.out.println(e);
-					}
-					lastCPUMeasureSent = avgCPU;
-					lastMemoryMeasureSent = avgMemory;				
-				} else if(CPUResult > threshold) {
-					try {
+						lastCPUMeasureSent = avgCPU;
+						lastMemoryMeasureSent = avgMemory;				
+					} else if(CPUResult > threshold) {
 						sendUpdate(avgCPU, avgMemory, 2);				
-					} catch(Exception e) {System.out.println(e);}
-					lastCPUMeasureSent = avgCPU;
-				} else if(MemoryResult > threshold) {
-					try {
+						lastCPUMeasureSent = avgCPU;
+					} else if(MemoryResult > threshold) {
 						sendUpdate(avgCPU, avgMemory, 3);				
-					} catch(Exception e) {System.out.println(e);}
-					lastMemoryMeasureSent = avgMemory;				
-				}
+						lastMemoryMeasureSent = avgMemory;				
+					}
+				}catch(Exception e) {System.out.println(e);}
 			} 
 
 		}
 	}
 
-	public static double getTaskCPU() throws Exception{
+	public static double getTaskCPU(String taskID) throws Exception{
 		Runtime rt = Runtime.getRuntime();
-        Process pr = rt.exec("docker stats ad9f54d3deb7 --format \"{{.CPUPerc}}\" --no-stream ");
+        Process pr = rt.exec("docker stats "+taskID+" --format \"{{.CPUPerc}}\" --no-stream ");
 		BufferedReader stdInput = new BufferedReader(new 
      	InputStreamReader(pr.getInputStream()));
 
@@ -108,9 +160,9 @@ public class energymonitoring {
 		return 0.0;
 	}
 
-	public static double getTaskMemory() throws Exception{
+	public static double getTaskMemory(String taskID) throws Exception{
 		Runtime rt = Runtime.getRuntime();
-        Process pr = rt.exec("docker stats ad9f54d3deb7 --format \"{{.MemPerc}}\" --no-stream ");
+        Process pr = rt.exec("docker stats "+taskID+" --format \"{{.MemPerc}}\" --no-stream ");
 		BufferedReader stdInput = new BufferedReader(new 
      	InputStreamReader(pr.getInputStream()));
 
