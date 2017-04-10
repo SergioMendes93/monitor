@@ -15,6 +15,7 @@ public class energymonitoring {
 	static double  lastCPUMeasureSent = 0.0;
 	static double  lastMemoryMeasureSent = 0.0;
 	static double  threshold = 0.1;
+	static String ipHostRegistry = "146.193.41.142";
 	static String ip = "";
 
 	static int BUFFER_POSITIONS = 20;
@@ -23,6 +24,7 @@ public class energymonitoring {
 
     	public static void main(String[] args) throws Exception {
 		ip = getIP();
+		//ip = getIP();
 //		SendInfoHostRegistry();
 //		Thread t1 = new ThreadMonitorHost();
 		//t1.start();
@@ -33,9 +35,9 @@ public class energymonitoring {
 	//function used to deal with incoming GET or POST requests from other modules
 	public static void receiveRequests() throws Exception{
 		HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-    	server.createContext("/newtask", new MyHandler());
-    	server.setExecutor(null); // creates a default executor
-    	server.start();
+	    	server.createContext("/newtask", new MyHandler());
+    		server.setExecutor(null); // creates a default executor
+    		server.start();
 	}
 
 	static class MyHandler implements HttpHandler {
@@ -204,53 +206,54 @@ public class energymonitoring {
 	public static void SendInfoHostRegistry() throws Exception{
 		String numCPUs = String.valueOf(Runtime.getRuntime().availableProcessors());		
 		Sigar sigar = new Sigar();
-        Mem mem = sigar.getMem();
+        	Mem mem = sigar.getMem();
 		String totalMemory = String.valueOf(mem.getTotal());
 		
-        String url = "http://"+ip+":12345/host/createhost/10&"+totalMemory+"&"+numCPUs;
+        	String url = "http://"+ipHostRegistry+":12345/host/createhost/10&"+totalMemory+"&"+numCPUs;
 		try {
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            		URL obj = new URL(url);
+            		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-            int responseCode = con.getResponseCode();
+            		int responseCode = con.getResponseCode();
 
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));       
-        }catch(Exception e) {
-            System.out.println("Exception " + e);
-        }
+            		BufferedReader in = new BufferedReader(
+                    	new InputStreamReader(con.getInputStream()));       
+        	}catch(Exception e) {
+            		System.out.println("Exception " + e);
+        	}
 	}
+
 	public static void sendUpdateTask(double cpu, double memory, int messageType) throws Exception{
-        String url = "";
-        if(messageType == 1){
-            url = "http://"+ip+":1234/task/updateboth/1&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
-        } else if(messageType == 2) {
-            url = "http://"+ip+":1234/task/updatecpu/1&"+String.valueOf(cpu);
-        } else {
-            url = "http://"+ip+":1234/task/updatememory/1&"+String.valueOf(memory);
-        }
-        try {
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+	        String url = "";
+        	if(messageType == 1){
+            		url = "http://"+ip+":1234/task/updateboth/1&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
+        	} else if(messageType == 2) {
+            		url = "http://"+ip+":1234/task/updatecpu/1&"+String.valueOf(cpu);
+       		} else {
+            		url = "http://"+ip+":1234/task/updatememory/1&"+String.valueOf(memory);
+        	}
+        	try {
+            		URL obj = new URL(url);
+            		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-            int responseCode = con.getResponseCode();
+            		int responseCode = con.getResponseCode();
 
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));       
-        }catch(Exception e) {
-            System.out.println("Exception " + e);
-        }
-    }
+            		BufferedReader in = new BufferedReader(
+                    	new InputStreamReader(con.getInputStream()));       
+        	}catch(Exception e) {
+            		System.out.println("Exception " + e);
+        	}
+    	}
 
-
+	//to host registry
 	public static void sendUpdate(double cpu, double memory, int messageType) {
 		String url = "";
 		if(messageType == 1){
-			url = "http://"+ip+":12345/host/updateboth/"+ip+"&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
+			url = "http://"+ipHostRegistry+":12345/host/updateboth/"+ip+"&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
 		} else if(messageType == 2) {
-			url = "http://"+ip+":12345/host/updatecpu/"+ip+"&"+String.valueOf(cpu);
+			url = "http://"+ipHostRegistry+":12345/host/updatecpu/"+ip+"&"+String.valueOf(cpu);
 		} else {
-			url = "http://"+ip+":12345/host/updatememory/"+ip+"&"+String.valueOf(memory);
+			url = "http://"+ipHostRegistry+":12345/host/updatememory/"+ip+"&"+String.valueOf(memory);
 		}
 		try {
 			URL obj = new URL(url);
