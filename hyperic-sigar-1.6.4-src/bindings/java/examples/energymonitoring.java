@@ -15,14 +15,14 @@ public class energymonitoring {
 	static double  lastCPUMeasureSent = 0.0;
 	static double  lastMemoryMeasureSent = 0.0;
 	static double  threshold = 0.1;
-	static String ip = "192.168.1.4";
+	static String ip = "";
 
 	static int BUFFER_POSITIONS = 20;
 	static int TIME_BETWEEN_SAMPLES = 3*1000; //3 seconds
 	static int TIME_BETWEEM_SENDING_SAMPLES = (BUFFER_POSITIONS * TIME_BETWEEN_SAMPLES) / 2;
 
-    public static void main(String[] args) throws Exception {
-//		getIP();
+    	public static void main(String[] args) throws Exception {
+		ip = getIP();
 //		SendInfoHostRegistry();
 //		Thread t1 = new ThreadMonitorHost();
 		//t1.start();
@@ -278,19 +278,21 @@ public class energymonitoring {
 		return mem.getUsedPercent()/100;
 	}
 	
-	public static void getIP() {
+	public static String getIP() {
 		try{
 	//      String hostname = addr.getHostName(); EM VEZ DE PELO IP POSSO PORVENTURA IDENTIFICAR O HOST POR ESTE NOME
 	//      System.out.println("Local host name: "+hostname);
-		    URL whatismyip = new URL("http://checkip.amazonaws.com");
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
 			BufferedReader in = new BufferedReader(new InputStreamReader(
-                whatismyip.openStream()));
+                	whatismyip.openStream()));
 
 			String ip = in.readLine(); //you get the IP as a String //this is the external IP address
 			System.out.println(ip);
-		  }
-        catch(Exception e){
+			return ip;
+		}
+        	catch(Exception e){
 
-        }
+        	}
+		return "";
 	}
 }
