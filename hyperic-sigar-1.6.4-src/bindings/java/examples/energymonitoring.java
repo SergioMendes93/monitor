@@ -25,7 +25,7 @@ public class energymonitoring {
     	public static void main(String[] args) throws Exception {
 		ip = getIP();
 		//ip = getIP();
-//		SendInfoHostRegistry();
+		SendInfoHostRegistry();
 //		Thread t1 = new ThreadMonitorHost();
 		//t1.start();
 		receiveRequests();
@@ -209,7 +209,7 @@ public class energymonitoring {
         	Mem mem = sigar.getMem();
 		String totalMemory = String.valueOf(mem.getTotal());
 		
-        	String url = "http://"+ipHostRegistry+":12345/host/createhost/10&"+totalMemory+"&"+numCPUs;
+        	String url = "http://"+ipHostRegistry+":12345/host/createhost/"+ip+"&"+totalMemory+"&"+numCPUs;
 		try {
             		URL obj = new URL(url);
             		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
