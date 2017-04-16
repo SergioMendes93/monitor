@@ -149,23 +149,14 @@ public class energymonitoring {
 	}
 
 	public static double getTaskCPU(String taskID) throws Exception{
-		ProcessBuilder pb = new ProcessBuilder("docker", "stats",taskID, "--format", "{{.CPUPerc}}", "--no-stream");
-      /*  Map<String, String> env = pb.environment();
-        // set environment variable u
-        env.put("DOCKER_TLS_VERIFY", "1");
-        env.put("DOCKER_HOST", "tcp://192.168.99.100:2376");
-		//TODO: ESTES DOIS ABAIXO TEM QUE SER DINAMICOS, OU SEJA O WORKER VEM COMO ARGUMENTO
-        env.put("DOCKER_CERT_PATH", "/home/sergiosmendes/.docker/machine/machines/manager");
-        env.put("DOCKER_MACHINE_NAME", "manager");
-*/
-        Process pr = pb.start();
-        BufferedReader stdInput = new BufferedReader(new 
-        InputStreamReader(pr.getInputStream()));
+		Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("docker stats " + taskID + " --format {{.CPUPerc}} --no-stream");      
+        BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
 		double cpuValue = 0.0;
-		String s = null;
-		int i = 0;
-		while ((s = stdInput.readLine()) != null) {
+        String s = null;
+        int i = 0;
+		while ((s = input.readLine()) != null) {
 			String[] parts = s.split("%");
 			String[] parts1 = parts[0].split("\"");
 			cpuValue = Double.parseDouble(parts1[1]);
@@ -175,23 +166,14 @@ public class energymonitoring {
 	}
 
 	public static double getTaskMemory(String taskID) throws Exception{
-		ProcessBuilder pb = new ProcessBuilder("docker", "stats",taskID, "--format", "{{.MemPerc}}", "--no-stream");
-  /*      Map<String, String> env = pb.environment();
-        // set environment variable u
-        env.put("DOCKER_TLS_VERIFY", "1");
-        env.put("DOCKER_HOST", "tcp://192.168.99.100:2376");
-        //TODO: ESTES DOIS ABAIXO TEM QUE SER DINAMICOS, OU SEJA O WORKER VEM COMO ARGUMENTO
-        env.put("DOCKER_CERT_PATH", "/home/sergiosmendes/.docker/machine/machines/manager");
-        env.put("DOCKER_MACHINE_NAME", "manager");
-*/
-        Process pr = pb.start();
-        BufferedReader stdInput = new BufferedReader(new 
-        InputStreamReader(pr.getInputStream()));
-		
+		Runtime rt = Runtime.getRuntime();
+		Process pr = rt.exec("docker stats " + taskID + " --format {{.MemPerc}} --no-stream");		
+		BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+
 		double memoryValue = 0.0;
 		String s = null;
 		int i = 0;
-		while ((s = stdInput.readLine()) != null) {
+		while ((s = input.readLine()) != null) {
 			String[] parts = s.split("%");
 			String[] parts1 = parts[0].split("\"");
 			memoryValue = Double.parseDouble(parts1[1]);
