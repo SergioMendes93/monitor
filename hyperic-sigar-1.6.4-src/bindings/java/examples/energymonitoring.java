@@ -91,14 +91,14 @@ public class energymonitoring {
 				//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
                 try {
 					if((CPUResult > threshold) && (MemoryResult > threshold)) {
-                        sendUpdateTask(avgCPU, avgMemory, 1);
+                        sendUpdateTask(avgCPU, avgMemory, 1, taskID);
 	                    lastCPU = avgCPU;
     	                lastMemory = avgMemory;
         	        } else if(CPUResult > threshold) {
-                        sendUpdateTask(avgCPU, avgMemory, 2);
+                        sendUpdateTask(avgCPU, avgMemory, 2, taskID);
 	                    lastCPU = avgCPU;
                 	} else if(MemoryResult > threshold) {
-                        sendUpdateTask(avgCPU, avgMemory, 3);
+                        sendUpdateTask(avgCPU, avgMemory, 3, taskID);
 	                    lastMemory = avgMemory;
 					}
                 }catch(Exception e) {System.out.println(e);}
@@ -205,14 +205,14 @@ public class energymonitoring {
         	}
 	}
 
-	public static void sendUpdateTask(double cpu, double memory, int messageType) throws Exception{
+	public static void sendUpdateTask(double cpu, double memory, int messageType, String taskID) throws Exception{
 	        String url = "";
         	if(messageType == 1){
-            		url = "http://"+ip+":1234/task/updateboth/1&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
+            		url = "http://"+ip+":1234/task/updateboth/"+taskID+"&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
         	} else if(messageType == 2) {
-            		url = "http://"+ip+":1234/task/updatecpu/1&"+String.valueOf(cpu);
+            		url = "http://"+ip+":1234/task/updatecpu/"+taskID+"&"+String.valueOf(cpu);
        		} else {
-            		url = "http://"+ip+":1234/task/updatememory/1&"+String.valueOf(memory);
+            		url = "http://"+ip+":1234/task/updatememory/"+taskID+"&"+String.valueOf(memory);
         	}
         	try {
             		URL obj = new URL(url);
