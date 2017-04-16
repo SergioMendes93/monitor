@@ -150,14 +150,14 @@ public class energymonitoring {
 
 	public static double getTaskCPU(String taskID) throws Exception{
 		ProcessBuilder pb = new ProcessBuilder("docker", "stats",taskID, "--format", "{{.CPUPerc}}", "--no-stream");
-        Map<String, String> env = pb.environment();
+      /*  Map<String, String> env = pb.environment();
         // set environment variable u
         env.put("DOCKER_TLS_VERIFY", "1");
         env.put("DOCKER_HOST", "tcp://192.168.99.100:2376");
 		//TODO: ESTES DOIS ABAIXO TEM QUE SER DINAMICOS, OU SEJA O WORKER VEM COMO ARGUMENTO
         env.put("DOCKER_CERT_PATH", "/home/sergiosmendes/.docker/machine/machines/manager");
         env.put("DOCKER_MACHINE_NAME", "manager");
-
+*/
         Process pr = pb.start();
         BufferedReader stdInput = new BufferedReader(new 
         InputStreamReader(pr.getInputStream()));
@@ -176,14 +176,14 @@ public class energymonitoring {
 
 	public static double getTaskMemory(String taskID) throws Exception{
 		ProcessBuilder pb = new ProcessBuilder("docker", "stats",taskID, "--format", "{{.MemPerc}}", "--no-stream");
-        Map<String, String> env = pb.environment();
+  /*      Map<String, String> env = pb.environment();
         // set environment variable u
         env.put("DOCKER_TLS_VERIFY", "1");
         env.put("DOCKER_HOST", "tcp://192.168.99.100:2376");
         //TODO: ESTES DOIS ABAIXO TEM QUE SER DINAMICOS, OU SEJA O WORKER VEM COMO ARGUMENTO
         env.put("DOCKER_CERT_PATH", "/home/sergiosmendes/.docker/machine/machines/manager");
         env.put("DOCKER_MACHINE_NAME", "manager");
-
+*/
         Process pr = pb.start();
         BufferedReader stdInput = new BufferedReader(new 
         InputStreamReader(pr.getInputStream()));
