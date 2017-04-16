@@ -174,6 +174,9 @@ public class energymonitoring {
 		String s = null;
 		int i = 0;
 		while ((s = input.readLine()) != null) {
+			System.out.println("AQUI");
+			System.out.println(s);
+
 			String[] parts = s.split("%");
 			String[] parts1 = parts[0].split("\"");
 			memoryValue = Double.parseDouble(parts1[1]);
