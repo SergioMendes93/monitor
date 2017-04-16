@@ -26,8 +26,8 @@ public class energymonitoring {
 		ip = getIP();
 		//ip = getIP();
 		SendInfoHostRegistry();
-//		Thread t1 = new ThreadMonitorHost();
-		//t1.start();
+		Thread t1 = new ThreadMonitorHost();
+		t1.start();
 		receiveRequests();
                 
 	}
@@ -122,7 +122,6 @@ public class energymonitoring {
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
 					}catch(Exception e) {System.out.println(e);}
 				}
-				System.out.println("got all samples");
 				double avgCPU = sumCPU / BUFFER_POSITIONS;
 				double avgMemory = sumMemory / BUFFER_POSITIONS;
 
