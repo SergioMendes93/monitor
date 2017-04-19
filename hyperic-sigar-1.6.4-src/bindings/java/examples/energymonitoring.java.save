@@ -163,8 +163,6 @@ public class energymonitoring {
 			cpuValue = Double.parseDouble(parts[0]);
 			return cpuValue;
 		}
-		//if it reaches this point then it means this task has already ended so we cancel its monitoring
-		Thread.stop();
 		return 0.0;
 	}
 
@@ -183,8 +181,10 @@ public class energymonitoring {
 			memoryValue = Double.parseDouble(parts[0]);
 			return memoryValue;
 		}
-		//if it reaches this point then it means this task has already ended so we cancel its monitoring
-		Thread.stop();
+
+		//TODO: Em vez de fazer só o return, vai alertar tambem o task registyry que esta task terminou
+		//isto se eu decidir que nao é o scheduler a detetar que a task terminou
+		//TODO: se vier aqui mato a thread porque quer dizer que esta task terminou
 		return 0.0;
 	}
 
