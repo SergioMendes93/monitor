@@ -75,6 +75,8 @@ public class energymonitoring {
 					try {
 						sumCPU += getTaskCPU(taskID);
 						sumMemory += getTaskMemory(taskID);
+						if(sumCPU == -1.0 || sumMemory == -1.0)
+							return
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
 					}catch(Exception e) {System.out.println(e);}
 				}
@@ -163,9 +165,8 @@ public class energymonitoring {
 			cpuValue = Double.parseDouble(parts[0]);
 			return cpuValue;
 		}
-		//if it reaches this point then it means this task has already ended so we cancel its monitoring
-		Thread.stop();
-		return 0.0;
+		//if it reaches this point then it means this task has already ended so we cancel its monitoring identified by -1.0
+		return -1.0;
 	}
 
 	public static double getTaskMemory(String taskID) throws Exception{
@@ -183,9 +184,7 @@ public class energymonitoring {
 			memoryValue = Double.parseDouble(parts[0]);
 			return memoryValue;
 		}
-		//if it reaches this point then it means this task has already ended so we cancel its monitoring
-		Thread.stop();
-		return 0.0;
+		return -1.0;
 	}
 
 	//this method is responsible for sending information of this host to the host registry such as total cpus, total memory
