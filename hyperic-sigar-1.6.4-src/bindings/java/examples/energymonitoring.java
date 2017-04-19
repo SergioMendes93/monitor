@@ -76,7 +76,7 @@ public class energymonitoring {
 						sumCPU += getTaskCPU(taskID);
 						sumMemory += getTaskMemory(taskID);
 						if(sumCPU == -1.0 || sumMemory == -1.0)
-							return
+							return;
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
 					}catch(Exception e) {System.out.println(e);}
 				}
