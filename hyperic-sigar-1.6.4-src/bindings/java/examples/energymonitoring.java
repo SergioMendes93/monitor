@@ -162,7 +162,6 @@ public class energymonitoring {
         String s = null;
         int i = 0;
 		while ((s = input.readLine()) != null) {
-			System.out.println("CPU READ " + s);
 			String[] parts = s.split("%");
 			//String[] parts1 = parts[0].split("\"");
 			cpuValue = Double.parseDouble(parts[0]);
@@ -181,7 +180,6 @@ public class energymonitoring {
 		String s = null;
 		int i = 0;
 		while ((s = input.readLine()) != null) {
-			System.out.println("memory READ " + s);
 
 			String[] parts = s.split("%");
 			//String[] parts1 = parts[0].split("\"");
