@@ -73,10 +73,12 @@ public class energymonitoring {
 
 				for(int i = 0; i < BUFFER_POSITIONS; i++) {
 					try {
-						sumCPU += getTaskCPU(taskID);
-						sumMemory += getTaskMemory(taskID);
-						if(sumCPU == -1.0 || sumMemory == -1.0)
+						double auxCPU = getTaskCPU(taskID);
+						double auxMemory = getTaskMemory(taskID);
+						if(auxCPU == -1.0 || auxMemory == -1.0)
 							return;
+						sumMemory += auxMemory;
+						sumCPU += auxCPU;
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
 					}catch(Exception e) {System.out.println(e);}
 				}
