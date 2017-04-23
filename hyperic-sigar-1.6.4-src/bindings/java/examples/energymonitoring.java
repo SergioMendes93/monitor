@@ -75,8 +75,7 @@ public class energymonitoring {
 					try {
 						double auxCPU = getTaskCPU(taskID);
 						double auxMemory = getTaskMemory(taskID);
-						if(auxCPU == -1.0 || auxMemory == -1.0) {
-							System.out.println("returning");
+						if(auxMemory == -1.0) {
 							return;
 						}
 						sumMemory += auxMemory;
@@ -163,14 +162,11 @@ public class energymonitoring {
         String s = null;
         int i = 0;
 		while ((s = input.readLine()) != null) {
-			System.out.println("Reading cpu " + s);
-
 			String[] parts = s.split("%");
 			//String[] parts1 = parts[0].split("\"");
 			cpuValue = Double.parseDouble(parts[0]);
 			return cpuValue;
 		}
-		System.out.println("aqui2");
 		//if it reaches this point then it means this task has already ended so we cancel its monitoring identified by -1.0
 		return -1.0;
 	}
@@ -184,14 +180,13 @@ public class energymonitoring {
 		String s = null;
 		int i = 0;
 		while ((s = input.readLine()) != null) {
-			System.out.println("Reading memory " + s);
-
 			String[] parts = s.split("%");
 			//String[] parts1 = parts[0].split("\"");
 			memoryValue = Double.parseDouble(parts[0]);
+			if memoryValue == 0.0
+				return -1.0;
 			return memoryValue;
 		}
-		System.out.println("aqui1");
 		return -1.0;
 	}
 
