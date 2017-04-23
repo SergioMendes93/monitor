@@ -183,7 +183,7 @@ public class energymonitoring {
 			String[] parts = s.split("%");
 			//String[] parts1 = parts[0].split("\"");
 			memoryValue = Double.parseDouble(parts[0]);
-			if memoryValue == 0.0
+			if (memoryValue == 0.0)
 				return -1.0;
 			return memoryValue;
 		}
