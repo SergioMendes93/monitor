@@ -76,7 +76,7 @@ public class energymonitoring {
 						double auxCPU = getTaskCPU(taskID);
 						double auxMemory = getTaskMemory(taskID);
 						if(auxCPU == -1.0 || auxMemory == -1.0) {
-							System.out.Println("returning");
+							System.out.println("returning");
 							return;
 						}
 						sumMemory += auxMemory;
