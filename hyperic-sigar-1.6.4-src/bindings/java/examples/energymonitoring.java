@@ -130,6 +130,8 @@ public class energymonitoring {
 				double avgCPU = sumCPU / BUFFER_POSITIONS;
 				double avgMemory = sumMemory / BUFFER_POSITIONS;
 
+				System.out.println("HOST got all samples : " + avgCPU + " " + avgMemory);
+
 				//we compare the last sent value with the new one to see if it is worth sending it
 				double CPUResult = Math.abs(lastCPUMeasureSent - avgCPU); 
 				double MemoryResult = Math.abs(lastMemoryMeasureSent - avgMemory);
@@ -165,7 +167,7 @@ public class energymonitoring {
 			String[] parts = s.split("%");
 			//String[] parts1 = parts[0].split("\"");
 			cpuValue = Double.parseDouble(parts[0]);
-			return cpuValue;
+			return cpuValue/100;
 		}
 		//if it reaches this point then it means this task has already ended so we cancel its monitoring identified by -1.0
 		return -1.0;
@@ -186,7 +188,7 @@ public class energymonitoring {
 			memoryValue = Double.parseDouble(parts[0]);
 			if (memoryValue == 0.0)
 				return -1.0;
-			return memoryValue;
+			return memoryValue/100;
 		}
 		return -1.0;
 	}
