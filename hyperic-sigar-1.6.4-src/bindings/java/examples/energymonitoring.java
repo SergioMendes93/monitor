@@ -103,12 +103,20 @@ public class energymonitoring {
 				String[] partsMemory = parts[2].split("%");
             	double memoryValue = Double.parseDouble(partsMemory[0]);
 
-				if( i == 0) {
+				try {
+					if( i == 0) {
+						currentTasks.get(parts[0]).currentCPU = cpuValue / 100;
+						currentTasks.get(parts[0]).currentMemory = memoryValue / 100;
+					} else{
+						currentTasks.get(parts[0]).currentCPU += cpuValue / 100;
+						currentTasks.get(parts[0]).currentMemory += memoryValue / 100;
+					}
+				}
+				catch(Exception e) {
+					System.out.println("Adding task to hashmap");
+					currentTasks.put(parts[0],new Task());
 					currentTasks.get(parts[0]).currentCPU = cpuValue / 100;
 					currentTasks.get(parts[0]).currentMemory = memoryValue / 100;
-				} else{
-					currentTasks.get(parts[0]).currentCPU += cpuValue / 100;
-					currentTasks.get(parts[0]).currentMemory += memoryValue / 100;
 				}
 				currentTasks.get(parts[0]).alive = true;
         	}
