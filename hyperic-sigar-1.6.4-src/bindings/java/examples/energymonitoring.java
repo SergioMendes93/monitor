@@ -97,6 +97,9 @@ public class energymonitoring {
     	    String s = null;
         	while ((s = input.readLine()) != null) {
             	String[] parts = s.split(" "); //we split by spaces and we will get [0] = taskID [1]=cpuPerc [2]=memPerc
+
+				String[] partsTask = parts[0].split("\"");
+				String taskID = partsTask[1];
         		
 				String[] partsCPU = parts[1].split("%");
             	double cpuValue = Double.parseDouble(partsCPU[0]);
@@ -106,20 +109,20 @@ public class energymonitoring {
 
 				try {
 					if( i == 0) {
-						currentTasks.get(parts[0]).currentCPU = cpuValue / 100;
-						currentTasks.get(parts[0]).currentMemory = memoryValue / 100;
+						currentTasks.get(taskID).currentCPU = cpuValue / 100;
+						currentTasks.get(taskID).currentMemory = memoryValue / 100;
 					} else{
-						currentTasks.get(parts[0]).currentCPU += cpuValue / 100;
-						currentTasks.get(parts[0]).currentMemory += memoryValue / 100;
+						currentTasks.get(taskID).currentCPU += cpuValue / 100;
+						currentTasks.get(taskID).currentMemory += memoryValue / 100;
 					}
 				}
 				catch(Exception e) {
 					System.out.println("Adding task to hashmap");
-					currentTasks.put(parts[0],new Task());
-					currentTasks.get(parts[0]).currentCPU = cpuValue / 100;
-					currentTasks.get(parts[0]).currentMemory = memoryValue / 100;
+					currentTasks.put(taskID,new Task());
+					currentTasks.get(taskID).currentCPU = cpuValue / 100;
+					currentTasks.get(taskID).currentMemory = memoryValue / 100;
 				}
-				currentTasks.get(parts[0]).alive = true;
+				currentTasks.get(taskID).alive = true;
         	}
 		}
 	
