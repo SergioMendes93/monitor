@@ -48,15 +48,13 @@ public class energymonitoring {
 					}catch(Exception e) {System.out.println(e);}
 				}
 
-				ArrayList<String> tasksToRemove = new ArrayList<String>();
-
 				for(Map.Entry<String, Task> entry: currentTasks.entrySet()) {
 					Task task = entry.getValue();
 					String taskID = entry.getKey();
 
 					//if the task no longer exists, remove it
 					if(!task.alive){
-						tasksToRemove.add(taskID);
+						currentTasks.remove(taskID);
 						System.out.println(taskID + " no longer exists, removing it");
 						continue;
 					}
@@ -85,28 +83,20 @@ public class energymonitoring {
 	                    	currentTasks.get(taskID).lastMemory = avgMemory;
 						}
                 	}catch(Exception e) {System.out.println(e);}
-				}
-				
-				//removing tasks that have ended so they are no longer monitored
-				for (String taskID: tasksToRemove)
-					currentTasks.remove(taskID);
-				
+				}				
 			}
 		}
 	}
 
 		public static void getTaskInfo(int i) throws Exception{
     	    Runtime rt = Runtime.getRuntime();
-        	Process pr = rt.exec(new String[]{"docker","stats", "--format", "\"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\"", "--no-stream"});      
-
+        	Process pr = rt.exec("docker stats  --format {{.ID}} {{.CPUPerc}} {{.MemPerc}} --no-stream");      
         	BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
     	    String s = null;
+			System.out.println("Output from docker stats " + s);
         	while ((s = input.readLine()) != null) {
             	String[] parts = s.split(" "); //we split by spaces and we will get [0] = taskID [1]=cpuPerc [2]=memPerc
-
-				String[] partsTask = parts[0].split("\"");
-				String taskID = partsTask[1];
         		
 				String[] partsCPU = parts[1].split("%");
             	double cpuValue = Double.parseDouble(partsCPU[0]);
@@ -116,20 +106,20 @@ public class energymonitoring {
 
 				try {
 					if( i == 0) {
-						currentTasks.get(taskID).currentCPU = cpuValue / 100;
-						currentTasks.get(taskID).currentMemory = memoryValue / 100;
+						currentTasks.get(parts[0]).currentCPU = cpuValue / 100;
+						currentTasks.get(parts[0]).currentMemory = memoryValue / 100;
 					} else{
-						currentTasks.get(taskID).currentCPU += cpuValue / 100;
-						currentTasks.get(taskID).currentMemory += memoryValue / 100;
+						currentTasks.get(parts[0]).currentCPU += cpuValue / 100;
+						currentTasks.get(parts[0]).currentMemory += memoryValue / 100;
 					}
 				}
 				catch(Exception e) {
 					System.out.println("Adding task to hashmap");
-					currentTasks.put(taskID,new Task());
-					currentTasks.get(taskID).currentCPU = cpuValue / 100;
-					currentTasks.get(taskID).currentMemory = memoryValue / 100;
+					currentTasks.put(parts[0],new Task());
+					currentTasks.get(parts[0]).currentCPU = cpuValue / 100;
+					currentTasks.get(parts[0]).currentMemory = memoryValue / 100;
 				}
-				currentTasks.get(taskID).alive = true;
+				currentTasks.get(parts[0]).alive = true;
         	}
 		}
 	
