@@ -90,11 +90,11 @@ public class energymonitoring {
 
 		public static void getTaskInfo(int i) throws Exception{
     	    Runtime rt = Runtime.getRuntime();
-        	Process pr = rt.exec("docker stats --format \"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\" --no-stream");      
+        	Process pr = rt.exec(new String[]{"docker","stats", "--format", "\"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\"", "--no-stream"});      
+
         	BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
     	    String s = null;
-			System.out.println("Output from docker stats " + s);
         	while ((s = input.readLine()) != null) {
             	String[] parts = s.split(" "); //we split by spaces and we will get [0] = taskID [1]=cpuPerc [2]=memPerc
         		
