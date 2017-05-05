@@ -22,94 +22,97 @@ public class energymonitoring {
 	static int TIME_BETWEEN_SAMPLES = 3*1000; //3 seconds
 	static int TIME_BETWEEM_SENDING_SAMPLES = (BUFFER_POSITIONS * TIME_BETWEEN_SAMPLES) / 2;
 
+	static HashMap<String,Task> currentTasks = new HashMap<String,Task>();
+
     	public static void main(String[] args) throws Exception {
 		ip = getIP();
 		//ip = getIP();
 		SendInfoHostRegistry();
 		Thread t1 = new ThreadMonitorHost();
 		t1.start();
-		receiveRequests();
-                
-	}
-
-	//function used to deal with incoming GET or POST requests from other modules
-	public static void receiveRequests() throws Exception{
-		HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-	    	server.createContext("/newtask", new MyHandler());
-    		server.setExecutor(null); // creates a default executor
-    		server.start();
-	}
-
-	static class MyHandler implements HttpHandler {
-		@Override
-    	public void handle(HttpExchange t) throws IOException {
-			Thread thread = new ThreadMonitorTask(t);
-			thread.start();
-    	}
+		
+		Thread t2 = new ThreadMonitorTask();
+		t2.start();
 	}
 
 	//thread responsible for monitoring task resource usage
 	static class ThreadMonitorTask extends Thread {
-		private String taskID;
-		HttpExchange t;
-		String query;
-		double lastCPU = 0.0;
-		double lastMemory = 0.0;
-
-		public ThreadMonitorTask(HttpExchange t) {
-			this.t = t;
-			query = t.getRequestURI().getQuery();
-			String[] parts = query.split("=");
-			taskID = parts[1];
-			System.out.println("Task ID received " + taskID);
-
-		}		
 
 		@Override
 		public void run() {
 			while(true) {
-				double sumMemory = 0.0;
-				double sumCPU = 0.0;
-
 				for(int i = 0; i < BUFFER_POSITIONS; i++) {
-					try {
-						double auxCPU = getTaskCPU(taskID);
-						double auxMemory = getTaskMemory(taskID);
-						if(auxMemory == -1.0) {
-							return;
-						}
-						sumMemory += auxMemory;
-						sumCPU += auxCPU;
+					try {	
+						getTaskInfo(i);
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
 					}catch(Exception e) {System.out.println(e);}
 				}
-				double avgCPU = sumCPU / BUFFER_POSITIONS;
-				double avgMemory = sumMemory / BUFFER_POSITIONS;
 
-				System.out.println("got all samples : " + avgCPU + " " + avgMemory);
-				
-				//we compare the last sent value with the new one to see if it is worth sending it
-				double CPUResult = Math.abs(lastCPU - avgCPU); 
-				double MemoryResult = Math.abs(lastMemory - avgMemory);
-				
+				for(Map.Entry<String, Task> entry: currentTasks.entrySet()) {
+					Task task = entry.getValue();
+					String taskID = entry.getKey();
 
-				//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
-                try {
-					if((CPUResult > threshold) && (MemoryResult > threshold)) {
-                        sendUpdateTask(avgCPU, avgMemory, 1, taskID);
-	                    lastCPU = avgCPU;
-    	                lastMemory = avgMemory;
-        	        } else if(CPUResult > threshold) {
-                        sendUpdateTask(avgCPU, avgMemory, 2, taskID);
-	                    lastCPU = avgCPU;
-                	} else if(MemoryResult > threshold) {
-                        sendUpdateTask(avgCPU, avgMemory, 3, taskID);
-	                    lastMemory = avgMemory;
+					//if the task no longer exists, remove it
+					if(!task.alive){
+						currentTasks.remove(taskID);
+						System.out.println(taskID + " no longer exists, removing it");
+						continue;
 					}
-                }catch(Exception e) {System.out.println(e);}
+					currentTasks.get(taskID).alive = false;
+
+					double avgCPU = task.currentCPU / BUFFER_POSITIONS;
+					double avgMemory = task.currentMemory / BUFFER_POSITIONS;
+
+					System.out.println("got all samples  " + taskID + ": "  + avgCPU + " " + avgMemory);
+			
+					//we compare the last sent value with the new one to see if it is worth sending it
+					double CPUResult = Math.abs(task.lastCPU - avgCPU); 
+					double MemoryResult = Math.abs(task.lastMemory - avgMemory);
+					
+					//if the first condition is true we send both information in one message avoiding sending two messages, one for the cpu update and the other for the memory update
+                	try {
+						if((CPUResult > threshold) && (MemoryResult > threshold)) {
+                        	sendUpdateTask(avgCPU, avgMemory, 1, taskID);
+	                    	currentTasks.get(taskID).lastCPU = avgCPU;
+    	                	currentTasks.get(taskID).lastMemory = avgMemory;
+        	        	} else if(CPUResult > threshold) {
+                        	sendUpdateTask(avgCPU, avgMemory, 2, taskID);
+	                    	currentTasks.get(taskID).lastCPU = avgCPU;
+                		} else if(MemoryResult > threshold) {
+                        	sendUpdateTask(avgCPU, avgMemory, 3, taskID);
+	                    	currentTasks.get(taskID).lastMemory = avgMemory;
+						}
+                	}catch(Exception e) {System.out.println(e);}
+				}				
 			}
 		}
 	}
+
+		public static void getTaskInfo(int i) throws Exception{
+    	    Runtime rt = Runtime.getRuntime();
+        	Process pr = rt.exec("docker stats  --format \"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\" --no-stream");      
+        	BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+
+    	    String s = null;
+        	while ((s = input.readLine()) != null) {
+            	String[] parts = s.split(" "); //we split by spaces and we will get [0] = taskID [1]=cpuPerc [2]=memPerc
+        		
+				String[] partsCPU = parts[1].split("%");
+            	double cpuValue = Double.parseDouble(partsCPU[0]);
+
+				String[] partsMemory = parts[2].split("%");
+            	double memoryValue = Double.parseDouble(partsMemory[0]);
+
+				if( i == 0) {
+					currentTasks.get(parts[0]).currentCPU = cpuValue / 100;
+					currentTasks.get(parts[0]).currentMemory = memoryValue / 100;
+				} else{
+					currentTasks.get(parts[0]).currentCPU += cpuValue / 100;
+					currentTasks.get(parts[0]).currentMemory += memoryValue / 100;
+				}
+				currentTasks.get(parts[0]).alive = true;
+        	}
+		}
 	
 	//thread responsible for monitoring host resource usage
 	static class ThreadMonitorHost extends Thread {
@@ -153,44 +156,6 @@ public class energymonitoring {
 			} 
 
 		}
-	}
-
-	public static double getTaskCPU(String taskID) throws Exception{
-		Runtime rt = Runtime.getRuntime();
-        Process pr = rt.exec("docker stats " + taskID + " --format {{.CPUPerc}} --no-stream");      
-        BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-
-		double cpuValue = 0.0;
-        String s = null;
-        int i = 0;
-		while ((s = input.readLine()) != null) {
-			String[] parts = s.split("%");
-			//String[] parts1 = parts[0].split("\"");
-			cpuValue = Double.parseDouble(parts[0]);
-			return cpuValue/100;
-		}
-		//if it reaches this point then it means this task has already ended so we cancel its monitoring identified by -1.0
-		return -1.0;
-	}
-
-	public static double getTaskMemory(String taskID) throws Exception{
-		Runtime rt = Runtime.getRuntime();
-		Process pr = rt.exec("docker stats " + taskID + " --format {{.MemPerc}} --no-stream");		
-		BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-
-		double memoryValue = 0.0;
-		String s = null;
-		int i = 0;
-		while ((s = input.readLine()) != null) {
-
-			String[] parts = s.split("%");
-			//String[] parts1 = parts[0].split("\"");
-			memoryValue = Double.parseDouble(parts[0]);
-			if (memoryValue == 0.0)
-				return -1.0;
-			return memoryValue/100;
-		}
-		return -1.0;
 	}
 
 	//this method is responsible for sending information of this host to the host registry such as total cpus, total memory
@@ -289,4 +254,13 @@ public class energymonitoring {
         	}
 		return "";
 	}
+}
+
+class Task {
+	public double lastCPU = 0.0;
+	public double lastMemory = 0.0;
+	public double currentCPU = 0.0;	
+	public double currentMemory = 0.0;
+	public boolean alive = false;
+
 }
