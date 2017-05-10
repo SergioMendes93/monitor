@@ -45,7 +45,7 @@ public class energymonitoring {
 					try {	
 						getTaskInfo(i);
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
-					}catch(Exception e) {System.out.println(e);}
+					}catch(Exception e) {}
 				}
 
 				ArrayList<String> tasksToRemove = new ArrayList<String>();
@@ -57,7 +57,6 @@ public class energymonitoring {
 					//if the task no longer exists, remove it
 					if(!task.alive){
 						tasksToRemove.add(taskID);
-						System.out.println(taskID + " no longer exists, removing it");
 						continue;
 					}
 					currentTasks.get(taskID).alive = false;
@@ -65,8 +64,6 @@ public class energymonitoring {
 					double avgCPU = task.currentCPU / BUFFER_POSITIONS;
 					double avgMemory = task.currentMemory / BUFFER_POSITIONS;
 
-					System.out.println("got all samples  " + taskID + ": "  + avgCPU + " " + avgMemory);
-			
 					//we compare the last sent value with the new one to see if it is worth sending it
 					double CPUResult = Math.abs(task.lastCPU - avgCPU); 
 					double MemoryResult = Math.abs(task.lastMemory - avgMemory);
@@ -84,7 +81,7 @@ public class energymonitoring {
                         	sendUpdateTask(avgCPU, avgMemory, 3, taskID);
 	                    	currentTasks.get(taskID).lastMemory = avgMemory;
 						}
-                	}catch(Exception e) {System.out.println(e);}
+                	}catch(Exception e) {}
 				}
 				
 				//removing tasks that have ended so they are no longer monitored
@@ -124,7 +121,6 @@ public class energymonitoring {
 					}
 				}
 				catch(Exception e) {
-					System.out.println("Adding task to hashmap");
 					currentTasks.put(taskID,new Task());
 					currentTasks.get(taskID).currentCPU = cpuValue / 100;
 					currentTasks.get(taskID).currentMemory = memoryValue / 100;
@@ -147,12 +143,10 @@ public class energymonitoring {
 						sumMemory += getMemory();
 
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
-					}catch(Exception e) {System.out.println(e);}
+					}catch(Exception e) {}
 				}
 				double avgCPU = sumCPU / BUFFER_POSITIONS;
 				double avgMemory = sumMemory / BUFFER_POSITIONS;
-
-				System.out.println("HOST got all samples : " + avgCPU + " " + avgMemory);
 
 				//we compare the last sent value with the new one to see if it is worth sending it
 				double CPUResult = Math.abs(lastCPUMeasureSent - avgCPU); 
@@ -171,7 +165,7 @@ public class energymonitoring {
 						sendUpdate(avgCPU, avgMemory, 3);				
 						lastMemoryMeasureSent = avgMemory;				
 					}
-				}catch(Exception e) {System.out.println(e);}
+				}catch(Exception e) {}
 			} 
 
 		}
@@ -193,9 +187,7 @@ public class energymonitoring {
 
             		BufferedReader in = new BufferedReader(
                     	new InputStreamReader(con.getInputStream()));       
-        	}catch(Exception e) {
-            		System.out.println("Exception " + e);
-        	}
+        	}catch(Exception e) {}
 	}
 
 	public static void sendUpdateTask(double cpu, double memory, int messageType, String taskID) throws Exception{
@@ -215,9 +207,7 @@ public class energymonitoring {
 
             		BufferedReader in = new BufferedReader(
                     	new InputStreamReader(con.getInputStream()));       
-        	}catch(Exception e) {
-            		System.out.println("Exception " + e);
-        	}
+        	}catch(Exception e) { }
     	}
 
 	//to host registry
@@ -238,9 +228,7 @@ public class energymonitoring {
 
 			BufferedReader in = new BufferedReader(
 		    	    new InputStreamReader(con.getInputStream()));		
-		}catch(Exception e) {
-			System.out.println("Exception " + e);
-		}
+		}catch(Exception e) {}
 	}
 	
 	public static double getCPU() throws Exception {
@@ -265,12 +253,9 @@ public class energymonitoring {
                 	whatismyip.openStream()));
 
 			String ip = in.readLine(); //you get the IP as a String //this is the external IP address
-			System.out.println(ip);
 			return ip;
 		}
-        	catch(Exception e){
-
-        	}
+        	catch(Exception e){}
 		return "";
 	}
 }
