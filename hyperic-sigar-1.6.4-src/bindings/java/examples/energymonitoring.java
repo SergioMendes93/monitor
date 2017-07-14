@@ -15,7 +15,7 @@ public class energymonitoring {
 	static double  lastCPUMeasureSent = 0.0;
 	static double  lastMemoryMeasureSent = 0.0;
 	static double  threshold = 0.1;
-	static String ipHostRegistry = "146.193.41.142";
+	static String ipHostRegistry = "10.5.60.2";
 	static String ip = "";
 
 	static int BUFFER_POSITIONS = 20;
@@ -26,6 +26,7 @@ public class energymonitoring {
 
     	public static void main(String[] args) throws Exception {
 		ip = getIP();
+		System.out.println("IP: " + ip);
 		//ip = getIP();
 		SendInfoHostRegistry();
 		Thread t1 = new ThreadMonitorHost();
@@ -248,12 +249,13 @@ public class energymonitoring {
 		try{
 	//      String hostname = addr.getHostName(); EM VEZ DE PELO IP POSSO PORVENTURA IDENTIFICAR O HOST POR ESTE NOME
 	//      System.out.println("Local host name: "+hostname);
-			URL whatismyip = new URL("http://checkip.amazonaws.com");
+			/*URL whatismyip = new URL("http://checkip.amazonaws.com");
 			BufferedReader in = new BufferedReader(new InputStreamReader(
                 	whatismyip.openStream()));
 
-			String ip = in.readLine(); //you get the IP as a String //this is the external IP address
-			return ip;
+			String ip = in.readLine(); //you get the IP as a String //this is the external IP address*/
+			InetAddress i = InetAddress.getLocalHost();
+			return i.getHostAddress();
 		}
         	catch(Exception e){}
 		return "";
