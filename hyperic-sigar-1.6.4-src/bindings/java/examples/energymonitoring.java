@@ -256,20 +256,20 @@ public class energymonitoring {
 			String ip = in.readLine(); //you get the IP as a String //this is the external IP address
 			InetAddress i = InetAddress.getLocalHost();*/
 			Enumeration e = NetworkInterface.getNetworkInterfaces();
-			while(e.hasMoreElements())
-			{
-    				NetworkInterface n = (NetworkInterface) e.nextElement();
-    				Enumeration ee = n.getInetAddresses();
-    				while (ee.hasMoreElements())
-    				{
-			        	InetAddress i = (InetAddress) ee.nextElement();
-					String ipAddress = i.getHostAddress();
-					String ipParts = ipAddress.split(".");
-					if (ipParts[0].equals("10")) 
-						return ipAddress;
-    				}
-			}
-			return "buga";
+                        while(e.hasMoreElements())
+                        {
+                                NetworkInterface n = (NetworkInterface) e.nextElement();
+                                Enumeration ee = n.getInetAddresses();
+                                while (ee.hasMoreElements())
+                                {
+                                        InetAddress i = (InetAddress) ee.nextElement();
+                                        String ipAddress = i.getHostAddress();
+                                        String[] ipParts = ipAddress.split("\\.");
+                                        if (ipParts[0].equals("10")) 
+                                                return ipAddress;
+                                }
+                        }
+                        return "error";		
 		}
         	catch(Exception e){}
 		return "";
