@@ -93,42 +93,40 @@ public class energymonitoring {
 		}
 	}
 
-		public static void getTaskInfo(int i) throws Exception{
-    	    Runtime rt = Runtime.getRuntime();
-        	Process pr = rt.exec(new String[]{"docker","-H", "tcp://"+ip, "stats", "--format", "\"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\"", "--no-stream"});      
+	public static void getTaskInfo(int i) throws Exception{
+    		Runtime rt = Runtime.getRuntime();
+        	Process pr = rt.exec(new String[]{"docker","-H", "tcp://"+ip+":2376, "stats", "--format", "\"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\"", "--no-stream"});      
 
         	BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
-    	    String s = null;
+    	    	String s = null;
         	while ((s = input.readLine()) != null) {
-            	String[] parts = s.split(" "); //we split by spaces and we will get [0] = taskID [1]=cpuPerc [2]=memPerc
-
-				String[] partsTask = parts[0].split("\"");
-				String taskID = partsTask[1];
+            		String[] parts = s.split(" "); //we split by spaces and we will get [0] = taskID [1]=cpuPerc [2]=memPerc
+			String[] partsTask = parts[0].split("\"");
+			String taskID = partsTask[1];
         		
-				String[] partsCPU = parts[1].split("%");
-            	double cpuValue = Double.parseDouble(partsCPU[0]);
+			String[] partsCPU = parts[1].split("%");
+            		double cpuValue = Double.parseDouble(partsCPU[0]);
 
-				String[] partsMemory = parts[2].split("%");
-            	double memoryValue = Double.parseDouble(partsMemory[0]);
-
-				try {
-					if( i == 0) {
-						currentTasks.get(taskID).currentCPU = cpuValue / 100;
-						currentTasks.get(taskID).currentMemory = memoryValue / 100;
-					} else{
-						currentTasks.get(taskID).currentCPU += cpuValue / 100;
-						currentTasks.get(taskID).currentMemory += memoryValue / 100;
-					}
-				}
-				catch(Exception e) {
-					currentTasks.put(taskID,new Task());
+			String[] partsMemory = parts[2].split("%");
+            		double memoryValue = Double.parseDouble(partsMemory[0]);
+			try {
+				if( i == 0) {
 					currentTasks.get(taskID).currentCPU = cpuValue / 100;
 					currentTasks.get(taskID).currentMemory = memoryValue / 100;
+				} else{
+					currentTasks.get(taskID).currentCPU += cpuValue / 100;
+					currentTasks.get(taskID).currentMemory += memoryValue / 100;
 				}
-				currentTasks.get(taskID).alive = true;
+			}
+			catch(Exception e) {
+				currentTasks.put(taskID,new Task());
+				currentTasks.get(taskID).currentCPU = cpuValue / 100;
+				currentTasks.get(taskID).currentMemory = memoryValue / 100;
+			}
+			currentTasks.get(taskID).alive = true;
         	}
-		}
+	}
 	
 	//thread responsible for monitoring host resource usage
 	static class ThreadMonitorHost extends Thread {
