@@ -263,7 +263,10 @@ public class energymonitoring {
     				while (ee.hasMoreElements())
     				{
 			        	InetAddress i = (InetAddress) ee.nextElement();
-        				System.out.println(i.getHostAddress());
+					String ipAddress = i.getHostAddress();
+					String ipParts = ipAddress.split(".");
+					if (ipParts[0].equals("10")) 
+						return ipAddress;
     				}
 			}
 			return "buga";
