@@ -193,6 +193,8 @@ public class energymonitoring {
 
 	public static void sendUpdateTask(double cpu, double memory, int messageType, String taskID) throws Exception{
 	        String url = "";
+		System.out.println("Sending info to task registry: " + cpu + memory );
+
         	if(messageType == 1){
             		url = "http://"+ip+":1234/task/updateboth/"+taskID+"&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
         	} else if(messageType == 2) {
@@ -214,6 +216,8 @@ public class energymonitoring {
 	//to host registry
 	public static void sendUpdate(double cpu, double memory, int messageType) {
 		String url = "";
+		System.out.println("Sending info to host registry: " + cpu + memory );
+
 		if(messageType == 1){
 			url = "http://"+ipHostRegistry+":12345/host/updateboth/"+ip+"&"+String.valueOf(cpu)+"&"+String.valueOf(memory);
 		} else if(messageType == 2) {
