@@ -253,9 +253,20 @@ public class energymonitoring {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
                 	whatismyip.openStream()));
 
-			String ip = in.readLine(); //you get the IP as a String //this is the external IP address*/
-			InetAddress i = InetAddress.getLocalHost();
-			return i.getHostAddress();
+			String ip = in.readLine(); //you get the IP as a String //this is the external IP address
+			InetAddress i = InetAddress.getLocalHost();*/
+			Enumeration e = NetworkInterface.getNetworkInterfaces();
+			while(e.hasMoreElements())
+			{
+    				NetworkInterface n = (NetworkInterface) e.nextElement();
+    				Enumeration ee = n.getInetAddresses();
+    				while (ee.hasMoreElements())
+    				{
+			        	InetAddress i = (InetAddress) ee.nextElement();
+        				System.out.println(i.getHostAddress());
+    				}
+			}
+			return "buga";
 		}
         	catch(Exception e){}
 		return "";
