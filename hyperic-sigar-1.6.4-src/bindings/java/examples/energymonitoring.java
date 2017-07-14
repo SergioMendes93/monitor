@@ -95,7 +95,7 @@ public class energymonitoring {
 
 	public static void getTaskInfo(int i) throws Exception{
     		Runtime rt = Runtime.getRuntime();
-        	Process pr = rt.exec(new String[]{"docker","-H", "tcp://"+ip+":2376, "stats", "--format", "\"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\"", "--no-stream"});      
+        	Process pr = rt.exec(new String[]{"docker","-H", "tcp://"+ip+":2376", "stats", "--format", "\"{{.ID}} {{.CPUPerc}} {{.MemPerc}}\"", "--no-stream"});      
 
         	BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
