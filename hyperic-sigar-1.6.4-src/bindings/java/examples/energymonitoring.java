@@ -18,9 +18,9 @@ public class energymonitoring {
 	static String ipHostRegistry = "10.5.60.2";
 	static String ip = "";
 
-	static int BUFFER_POSITIONS = 20;
+	static int BUFFER_POSITIONS_HOST = 10; //this will make it send info from 30 seconds to 30 seconds
+	static int BUFFER_POSITIONS_TASK = 15; //this will make it send info from 45 seconds to 45 seconds
 	static int TIME_BETWEEN_SAMPLES = 3*1000; //3 seconds
-	static int TIME_BETWEEM_SENDING_SAMPLES = (BUFFER_POSITIONS * TIME_BETWEEN_SAMPLES) / 2;
 
 	static HashMap<String,Task> currentTasks = new HashMap<String,Task>();
 
@@ -42,7 +42,7 @@ public class energymonitoring {
 		@Override
 		public void run() {
 			while(true) {
-				for(int i = 0; i < BUFFER_POSITIONS; i++) {
+				for(int i = 0; i < BUFFER_POSITIONS_TASK; i++) {
 					try {	
 						getTaskInfo(i);
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
@@ -62,8 +62,8 @@ public class energymonitoring {
 					}
 					currentTasks.get(taskID).alive = false;
 
-					double avgCPU = task.currentCPU / BUFFER_POSITIONS;
-					double avgMemory = task.currentMemory / BUFFER_POSITIONS;
+					double avgCPU = task.currentCPU / BUFFER_POSITIONS_TASK;
+					double avgMemory = task.currentMemory / BUFFER_POSITIONS_TASK;
 
 					//we compare the last sent value with the new one to see if it is worth sending it
 					double CPUResult = Math.abs(task.lastCPU - avgCPU); 
@@ -136,7 +136,7 @@ public class energymonitoring {
 				double sumMemory = 0.0;
 				double sumCPU = 0.0;										
 
-				for(int i = 0; i < BUFFER_POSITIONS; i++) {
+				for(int i = 0; i < BUFFER_POSITIONS_HOST; i++) {
 					try{
 						sumCPU += getCPU();
 						sumMemory += getMemory();
@@ -144,8 +144,8 @@ public class energymonitoring {
 						Thread.sleep(TIME_BETWEEN_SAMPLES);
 					}catch(Exception e) {}
 				}
-				double avgCPU = sumCPU / BUFFER_POSITIONS;
-				double avgMemory = sumMemory / BUFFER_POSITIONS;
+				double avgCPU = sumCPU / BUFFER_POSITIONS_HOST;
+				double avgMemory = sumMemory / BUFFER_POSITIONS_HOST;
 
 				//we compare the last sent value with the new one to see if it is worth sending it
 				double CPUResult = Math.abs(lastCPUMeasureSent - avgCPU); 
